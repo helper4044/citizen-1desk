@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Worker Dashboard — Garbage Tracker</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body {font-family:system-ui,-apple-system,Segoe UI,Roboto,Poppins,Arial; margin:0; background:#f3fdf4;}
+    header {background:#2b8a3e;color:#fff;padding:14px;text-align:center;font-weight:600;}
+    .wrap {max-width:1100px;margin:14px auto;padding:12px}
+    #map {height:55vh;border-radius:8px}
+    .list {margin-top:12px;display:grid;grid-template-columns:1fr 360px;gap:12px}
+    .cards {max-height:40vh;overflow:auto;padding:6px}
+    .card {background:#fff;padding:12px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.06);margin-bottom:10px;text-align:left}
+    .card img{width:100%;border-radius:8px;margin-top:8px}
+    .btn{padding:8px 12px;border-radius:8px;border:0;color:#fff;font-weight:600;cursor:pointer;margin-right:8px}
+    .btn.clean{background:#2b8a3e} .btn.pending{background:#d9534f}
+    .actions{margin-top:8px}
+    @media(max-width:900px){ .list{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <header>👷 Worker Dashboard</header>
+
+  <div class="wrap">
+    <div id="map"></div>
+
+    <div class="list">
+      <div class="cards" id="cardsContainer"></div>
+      <div style="padding:12px;background:#fff;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.04)">
+        <h3>Controls</h3>
+        <p>Click a card to zoom to that marker. Use buttons to mark status.</p>
+        <button onclick="loadReports()" style="background:#2b8a3e;color:#fff;padding:8px 12px;border-radius:8px;border:0;cursor:pointer">Refresh</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    // ----------- CONFIG (already set) -----------
+    const BIN_ID = "69149419ae596e708f54b77e";
+    const API_KEY = "hh34hj3h4jhj3h"; // JSONBin X-Master-Key
+    // --------------------------------------------
+
+    let map = L.map(document.getElementById('map')).setView([20.5937,78.9629],5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'© OpenStreetMap contributors' }).addTo(map);
+
+    let markers = []; // keep markers to clear
+    const cardsContainer = document.getElementById('cardsContainer');
+
+    async function loadReports(){
+      try{
+        // clear previous
+        markers.forEach(m => map.removeLayer(m));
+        markers = [];
+        cardsContainer.innerHTML = 'Loading...';
+
+        const resp = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+          headers: {"X-Master-Key": API_KEY}
+        });
+        if(!resp.ok) throw new Error('Failed to load JSONBin. Check BIN_ID/API_KEY.');
+        const json = await resp.json();
+        const reports = (json.record && json.record.reports) ? json.record.reports : [];
+
+        if(reports.length === 0){
+          cardsContainer.innerHTML = '<p>No reports yet.</p>';
+          return;
+        }
+
+        cardsContainer.innerHTML = '';
+        reports.forEach((r, idx) => {
+          // marker
+          const m = L.marker([r.lat, r.lng]).addTo(map);
+          m.bindPopup(`<b>${escapeHtml(r.comment || 'No comment')}</b><br>Status: <b>${r.status}</b>`);
+          m.on('click', ()=> {
+            map.setView([r.lat, r.lng],15);
+          });
+          markers.push(m);
+
+          // card
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <div><b>Comment:</b> ${escapeHtml(r.comment || 'No comment')}</div>
+            <div style="margin-top:6px"><b>Time:</b> ${escapeHtml(r.timestamp || '')}</div>
+            <div style="margin-top:8px"><img src="${r.photoUrl}" alt="photo"></div>
+            <div style="margin-top:8px"><b>Status:</b> <span style="color:${r.status==='Cleaned'?'green':'red'}">${r.status}</span></div>
+            <div class="actions">
+              <a href="https://www.google.com/maps/dir/?api=1&destination=${r.lat},${r.lng}" target="_blank" style="margin-right:8px">🗺️ Route</a>
+              <button class="btn clean" onclick="updateStatus(${idx}, 'Cleaned')">Mark Cleaned</button>
+              <button class="btn pending" onclick="updateStatus(${idx}, 'Pending')">Mark Pending</button>
+            </div>
+          `;
+          // When click card, zoom to marker
+          card.addEventListener('click', () => { map.setView([r.lat, r.lng],15); });
+          cardsContainer.appendChild(card);
+        });
+
+      } catch(err){
+        console.error(err);
+        cardsContainer.innerHTML = '<p>Error loading reports. Check BIN_ID/API_KEY in code (console for details).</p>';
+      }
+    }
+
+    // escape to avoid XSS from text fields
+    function escapeHtml(str){
+      if(!str) return '';
+      return String(str).replace(/[&<>"']/g, function(s){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[s];});
+    }
+
+    async function updateStatus(index, newStatus){
+      try{
+        // fetch latest
+        const getResp = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+          headers: {"X-Master-Key": API_KEY}
+        });
+        if(!getResp.ok) throw new Error('Failed to read bin');
+        const binJson = await getResp.json();
+        const reports = (binJson.record && binJson.record.reports) ? binJson.record.reports : [];
+        if(!reports[index]) throw new Error('Report not found');
+
+        reports[index].status = newStatus;
+        // PUT updated array
+        const putResp = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+          method: 'PUT',
+          headers: {"Content-Type":"application/json","X-Master-Key":API_KEY},
+          body: JSON.stringify({reports})
+        });
+        if(!putResp.ok) throw new Error('Failed to update bin');
+
+        // reload UI
+        await loadReports();
+      } catch(err){
+        console.error(err);
+        alert('Error updating status: ' + (err.message || err));
+      }
+    }
+
+    // initial load
+    loadReports();
+  </script>
+</body>
+</html>
