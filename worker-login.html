@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Worker Login – CitizenDesk</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;font-family:Arial;background:linear-gradient(135deg,#0f2027,#203a43);color:#fff;display:flex;justify-content:center;align-items:center;height:100vh}
+.box{background:#122733;padding:30px;border-radius:16px;border:2px solid #00ffcc;width:320px;text-align:center}
+input{width:100%;padding:10px;margin-top:10px;border-radius:8px;border:none;background:#081821;color:#fff}
+button{width:100%;margin-top:16px;padding:10px;border:none;border-radius:8px;background:#00ffcc;font-weight:bold}
+</style>
+</head>
+<body>
+
+<div class="box">
+  <h2>Worker Login</h2>
+  <input id="u" placeholder="Username">
+  <input id="p" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <p style="font-size:12px;color:#bbb">Demo: worker / worker@123</p>
+</div>
+
+<script>
+function login(){
+  if(u.value==="worker" && p.value==="worker@123"){
+    location.href="worker.html";
+  }else alert("Invalid Worker Login");
+}
+</script>
+
+</body>
+</html>
