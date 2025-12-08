@@ -1,66 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Garbage Tracker | Home</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    *{box-sizing:border-box}
-    body{
-      font-family:'Poppins',sans-serif;
-      margin:0;
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
-      background: linear-gradient(135deg,#d1f7d6,#f1fff1);
-      align-items:center;
-      justify-content:center;
-      color:#222;
-    }
-    header{
-      width:100%;
-      background:#2b8a3e;
-      color:#fff;
-      padding:18px 0;
-      text-align:center;
-      font-weight:600;
-      box-shadow:0 4px 10px rgba(0,0,0,0.08);
-    }
-    main{
-      width:100%;
-      max-width:900px;
-      background:white;
-      border-radius:16px;
-      padding:36px;
-      margin:22px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.08);
-      text-align:center;
-    }
-    h1{color:#2b8a3e;margin-bottom:12px}
-    p{color:#555;margin-bottom:22px;line-height:1.5}
-    .btns{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
-    .btn{background:#2b8a3e;color:#fff;border:0;padding:14px 28px;border-radius:10px;font-weight:600;cursor:pointer}
-    .btn.secondary{background:#fff;color:#2b8a3e;border:1px solid rgba(43,138,62,0.12)}
-    .foot{margin-top:18px;color:#667;padding-top:8px;font-size:13px}
-    @media(max-width:520px){main{padding:22px} .btn{width:100%}}
-  </style>
+<meta charset="UTF-8">
+<title>CitizenDesk – Smart Civic Service</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body{
+  margin:0;
+  font-family:Poppins,sans-serif;
+  background:linear-gradient(135deg,#e7f3ee,#0f3d2e);
+  color:#222;
+}
+header{
+  background:#0f3d2e;
+  color:#fff;
+  padding:15px;
+  text-align:center;
+  font-size:22px;
+  font-weight:600;
+}
+.hero{
+  display:flex;
+  flex-wrap:wrap;
+  gap:20px;
+  justify-content:center;
+  align-items:center;
+  padding:40px 20px;
+}
+.hero-text{
+  max-width:480px;
+}
+.hero h1{color:#0f3d2e}
+.hero p{color:#333}
+.hero img{
+  width:320px;
+  border-radius:12px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.25);
+}
+.actions{
+  text-align:center;
+  padding:30px;
+}
+.btn{
+  padding:14px 26px;
+  border-radius:10px;
+  border:0;
+  margin:10px;
+  cursor:pointer;
+  font-weight:600;
+}
+.public{background:#0f3d2e;color:#fff}
+.worker{background:#fff;color:#0f3d2e;border:1px solid #0f3d2e}
+.contact{
+  background:#0f3d2e;
+  color:#fff;
+  padding:20px;
+  text-align:center;
+}
+.lang{
+  position:fixed;
+  top:10px;
+  right:10px;
+}
+</style>
 </head>
 <body>
-  <header>♻️ Garbage Tracker Portal</header>
 
-  <main>
-    <h1>Smart Waste Reporting</h1>
+<div class="lang">
+<select onchange="switchLang(this.value)">
+  <option value="en">English</option>
+  <option value="hi">हिंदी</option>
+</select>
+</div>
+
+<header>CitizenDesk – Smart Civic Issue Reporting</header>
+
+<section class="hero">
+  <div class="hero-text" id="heroText">
+    <h1>Report Civic Problems Easily</h1>
     <p>
-      Report garbage spots by pinning the location and uploading a photo. Workers can view all reports and mark them <strong>Pending</strong> or <strong>Cleaned</strong>.
+      Citizens can report garbage, water leaks, road issues and more.
+      Authorities get real-time alerts with photos and exact locations.
     </p>
+  </div>
+  <img src="https://images.unsplash.com/photo-1581092333851-59c9c2461c1b" alt="Authority fixing pipeline">
+</section>
 
-    <div class="btns">
-      <button class="btn" onclick="location.href='public.html'">I'm Public — Report</button>
-      <button class="btn secondary" onclick="location.href='worker.html'">I'm Worker — View Alerts</button>
-    </div>
+<div class="actions">
+  <button class="btn public" onclick="location.href='login.html'">Public Login</button>
+  <button class="btn worker" onclick="location.href='login.html'">Worker Login</button>
+</div>
 
-    <div class="foot">Deploy these three files to GitHub Pages to go live.</div>
-  </main>
+<div class="contact">
+  📞 Contact Us: XYZ-9876543210 | 📧 Email: xyz@email.com
+</div>
+
+<script>
+function switchLang(lang){
+  if(lang==="hi"){
+    document.getElementById("heroText").innerHTML=`
+      <h1>नागरिक समस्याएँ आसानी से रिपोर्ट करें</h1>
+      <p>
+        नागरिक कचरा, पानी की लीकेज, सड़क की समस्या आदि रिपोर्ट कर सकते हैं।
+        अधिकारी रियल टाइम अलर्ट प्राप्त करते हैं।
+      </p>`;
+  }else{
+    document.getElementById("heroText").innerHTML=`
+      <h1>Report Civic Problems Easily</h1>
+      <p>
+        Citizens can report garbage, water leaks, road issues and more.
+        Authorities get real-time alerts with photos and exact locations.
+      </p>`;
+  }
+}
+</script>
+
 </body>
 </html>
