@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>CitizenDesk — Worker Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+body{font-family:Poppins;margin:0;background:#eef6f1}
+header{background:#0f3d2e;color:#fff;padding:14px;text-align:center;font-weight:600}
+.wrap{max-width:1100px;margin:auto;padding:12px}
+#map{height:50vh;border-radius:8px}
+.card{background:#fff;padding:12px;border-radius:10px;margin-bottom:10px}
+.card img{width:100%;border-radius:8px}
+.btn{padding:8px 12px;border-radius:6px;border:0;color:#fff;cursor:pointer}
+.clean{background:#0f3d2e}
+.pending{background:#b33}
+</style>
+</head>
+<body>
+
+<header>👷 CitizenDesk – Worker Panel</header>
+<div class="wrap">
+  <div id="map"></div>
+  <div id="cards"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const BIN_ID="69149419ae596e708f54b77e";
+const API_KEY="$2a$10$M82XOQ0SzJJkyIbSqmB.N.P3E4SU23ePZ5D2QBby.ZbLAlwgBK3c6";
+
+let map=L.map('map').setView([30.0668,79.0193],7);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+async function loadReports(){
+  const cards=document.getElementById("cards");
+  cards.innerHTML="Loading...";
+
+  const r=await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`,{
+    headers:{"X-Master-Key":API_KEY}
+  });
+  const j=await r.json();
+  const reports=j.record?.reports||[];
+
+  cards.innerHTML="";
+  reports.forEach((rep,i)=>{
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=`
+      <b>Severity:</b> ${rep.severity}<br>
+      <b>Status:</b> ${rep.status}<br>
+      ${rep.comment}<br>
+      <img src="${rep.photoUrl}">
+      <br><br>
+      <button class="btn clean" onclick="updateStatus(${i},'Cleaned')">Cleaned</button>
+      <button class="btn pending" onclick="updateStatus(${i},'Pending')">Pending</button>
+    `;
+    cards.appendChild(c);
+  });
+}
+
+async function updateStatus(i,status){
+  const r=await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`,{
+    headers:{"X-Master-Key":API_KEY}
+  });
+  const j=await r.json();
+  const reports=j.record.reports;
+  reports[i].status=status;
+
+  await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`,{
+    method:"PUT",
+    headers:{
+      "Content-Type":"application/json",
+      "X-Master-Key":API_KEY
+    },
+    body:JSON.stringify({reports})
+  });
+
+  loadReports();
+}
+loadReports();
+</script>
+</body>
+</html>

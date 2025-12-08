@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CitizenDesk — Public Report</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+body{font-family:Poppins;margin:0;background:#edf6f2;}
+header{background:#0f3d2e;color:#fff;padding:14px;text-align:center;font-weight:600}
+#map{height:60vh}
+.controls{padding:14px;max-width:900px;margin:auto}
+input,textarea,select{width:100%;padding:10px;margin-top:8px;border-radius:8px;border:1px solid #bbb}
+textarea{min-height:70px}
+.btn{padding:10px 16px;border-radius:8px;border:0;cursor:pointer;font-weight:600}
+.submit{background:#0f3d2e;color:#fff}
+.back{background:#fff;color:#0f3d2e;border:2px solid #0f3d2e}
+.note{font-size:13px;color:#444;margin-top:8px}
+</style>
+</head>
+<body>
+
+<header>🗺️ CitizenDesk – Public Reporting</header>
+<div id="map"></div>
+
+<div class="controls">
+  <label>Upload Photo</label>
+  <input id="photo" type="file" accept="image/*">
+
+  <label>Problem Severity</label>
+  <select id="severity">
+    <option>Low</option>
+    <option>Medium</option>
+    <option>High</option>
+  </select>
+
+  <label>Description</label>
+  <textarea id="comment"></textarea>
+
+  <br><br>
+  <button class="btn submit" onclick="submitReport()">Submit</button>
+  <button class="btn back" onclick="location.href='index.html'">Back</button>
+
+  <div class="note" id="statusNote"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const CLOUD_NAME="drscsdi5m";
+const UPLOAD_PRESET="public_upload";
+const BIN_ID="69149419ae596e708f54b77e";
+const API_KEY="$2a$10$M82XOQ0SzJJkyIbSqmB.N.P3E4SU23ePZ5D2QBby.ZbLAlwgBK3c6";
+
+let map=L.map('map').setView([30.0668,79.0193],7);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+let marker=null,selectedLatLng=null;
+map.on('click',e=>{
+  selectedLatLng=e.latlng;
+  if(marker)map.removeLayer(marker);
+  marker=L.marker(e.latlng).addTo(map);
+});
+
+async function submitReport(){
+try{
+  if(!selectedLatLng)return alert("Select location first");
+  const file=document.getElementById("photo").files[0];
+  if(!file)return alert("Upload photo");
+
+  const comment=document.getElementById("comment").value;
+  const severity=document.getElementById("severity").value;
+
+  const fd=new FormData();
+  fd.append("file",file);
+  fd.append("upload_preset",UPLOAD_PRESET);
+
+  const up=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:"POST",body:fd});
+  const upData=await up.json();
+
+  const getR=await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`,{
+    headers:{"X-Master-Key":API_KEY}
+  });
+  const j=await getR.json();
+  const reports=j.record?.reports||[];
+
+  reports.push({
+    id:Date.now().toString(),
+    lat:selectedLatLng.lat,
+    lng:selectedLatLng.lng,
+    comment,
+    severity,
+    photoUrl:upData.secure_url,
+    status:"Pending",
+    timestamp:new Date().toISOString()
+  });
+
+  await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`,{
+    method:"PUT",
+    headers:{
+      "Content-Type":"application/json",
+      "X-Master-Key":API_KEY
+    },
+    body:JSON.stringify({reports})
+  });
+
+  alert("✅ Report Submitted Successfully");
+  location.reload();
+
+}catch(e){
+  alert("Error submitting report");
+  console.error(e);
+}}
+</script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CitizenDesk – Smart Civic Service</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body{
+  margin:0;
+  font-family:Poppins,sans-serif;
+  background:linear-gradient(135deg,#dceee6,#1b3a2f);
+}
+header{
+  background:#0f3d2e;
+  color:#fff;
+  padding:16px;
+  text-align:center;
+  font-size:22px;
+  font-weight:600;
+}
+.hero{
+  display:flex;
+  flex-wrap:wrap;
+  gap:20px;
+  padding:40px 20px;
+  justify-content:center;
+  align-items:center;
+}
+.hero-text{
+  max-width:420px;
+}
+.hero-text h1{color:#0f3d2e}
+.hero-text p{color:#222}
+.hero img{
+  width:340px;
+  border-radius:14px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.3);
+}
+.actions{
+  text-align:center;
+  padding:30px;
+}
+.btn{
+  padding:14px 26px;
+  border-radius:10px;
+  border:0;
+  margin:10px;
+  cursor:pointer;
+  font-weight:600;
+}
+.public{background:#0f3d2e;color:#fff}
+.worker{background:#fff;color:#0f3d2e;border:2px solid #0f3d2e}
+.contact{
+  background:#0f3d2e;
+  color:#fff;
+  padding:20px;
+  text-align:center;
+}
+.lang{
+  position:fixed;
+  top:10px;
+  right:10px;
+}
+</style>
+</head>
+<body>
+
+<div class="lang">
+<select onchange="switchLang(this.value)">
+  <option value="en">English</option>
+  <option value="hi">हिंदी</option>
+</select>
+</div>
+
+<header>CitizenDesk – Smart Civic Service</header>
+
+<section class="hero">
+  <div class="hero-text" id="heroText">
+    <h1>Report Civic Problems Easily</h1>
+    <p>
+      Citizens can report garbage, pipeline leakage, road damage and more.
+      Authorities receive real-time location with photo proof.
+    </p>
+  </div>
+
+  <!-- ✅ REAL IMAGE (WORKERS FIXING PIPELINE) -->
+  <img src="https://images.unsplash.com/photo-1615873968403-89e068629265" alt="Workers fixing pipeline">
+</section>
+
+<div class="actions">
+  <!-- ✅ DIRECT LINKS – NO LOGIN FILE -->
+  <button class="btn public" onclick="location.href='public.html'">Public Report</button>
+  <button class="btn worker" onclick="location.href='worker.html'">Worker Dashboard</button>
+</div>
+
+<div class="contact">
+  📞 Call: XYZ-9876543210 | 📧 Email: xyz@email.com
+</div>
+
+<script>
+function switchLang(lang){
+  if(lang==="hi"){
+    document.getElementById("heroText").innerHTML=`
+      <h1>नागरिक समस्याएँ आसानी से रिपोर्ट करें</h1>
+      <p>
+        नागरिक पानी की लीकेज, सड़क और कचरे की समस्या रिपोर्ट कर सकते हैं।
+        अधिकारी रियल-टाइम में समस्या देख सकते हैं।
+      </p>`;
+  }else{
+    document.getElementById("heroText").innerHTML=`
+      <h1>Report Civic Problems Easily</h1>
+      <p>
+        Citizens can report garbage, pipeline leakage, road damage and more.
+        Authorities receive real-time location with photo proof.
+      </p>`;
+  }
+}
+</script>
+
+</body>
+</html>
