@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Worker Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;font-family:Arial;background:#0f2027;color:#fff}
+header{background:#081821;padding:14px;text-align:center;font-weight:bold}
+.wrap{max-width:900px;margin:20px auto}
+.card{background:#122733;padding:16px;border-radius:12px;border:2px solid #00ffcc;margin-bottom:14px}
+img{width:100%;border-radius:10px;margin-top:10px}
+button{padding:8px 14px;border-radius:8px;border:0;margin-top:8px;font-weight:bold;cursor:pointer}
+.work{background:#ffa500}
+.done{background:#00ffcc;color:#000}
+.route{background:#007bff;color:#fff}
+.statusTag{display:inline-block;padding:4px 10px;border-radius:8px;font-size:13px;margin-top:6px}
+.status-pending{background:#777}
+.status-working{background:#ffa500}
+.status-done{background:#00ffcc;color:#000}
+</style>
+</head>
+
+<body>
+
+<header>Worker Dashboard</header>
+<div class="wrap" id="wrap"></div>
+
+<script>
+const BIN_ID="69149419ae596e708f54b77e";
+const API_KEY="$2a$10$M82XOQ0SzJJkyIbSqmB.N.P3E4SU23ePZ5D2QBby.ZbLAlwgBK3c6";
+
+let data=[];
+
+async function load(){
+  const r=await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`,{
+    headers:{"X-Master-Key":API_KEY}
+  });
+  const j=await r.json();
+  data=j.record?.complaints||[];
+  wrap.innerHTML="";
+
+  data.forEach((c,i)=>{
+    const d=document.createElement("div");
+    d.className="card";
+
+    // status tag style
+    let statusClass="status-pending";
+    let statusText="Not Yet Taken";
+    if(c.status==="Under Working"){statusClass="status-working";statusText="Under Working";}
+    if(c.status==="Completed"){statusClass="status-done";statusText="Problem Solved";}
+
+    // buttons based on state
+    let buttonsHtml="";
+    if(c.status==="Not Yet Taken"){
+      buttonsHtml = `
+        <button class="work" onclick="updateStatus(${i},'Under Working')">Take Action</button>
+      `;
+    }else if(c.status==="Under Working"){
+      buttonsHtml = `
+        <button class="done" onclick="updateStatus(${i},'Completed')">Mark Completed</button>
+      `;
+    }else if(c.status==="Completed"){
+      buttonsHtml = `<span class="statusTag status-done">Problem Solved</span>`;
+    }
+
+    d.innerHTML=`
+      <b>${c.issue}</b><br>
+      ${c.desc}<br><br>
+      <span class="statusTag ${statusClass}">${statusText}</span><br><br>
+      ${c.image ? `<img src="${c.image}">`:"<i>No Image</i>"}<br><br>
+      <button class="route" onclick="route(${c.lat},${c.lng})">Route</button>
+      ${buttonsHtml}
+    `;
+    wrap.appendChild(d);
+  });
+}
+
+async function updateStatus(i,status){
+  data[i].status=status;
+  await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`,{
+    method:"PUT",
+    headers:{
+      "Content-Type":"application/json",
+      "X-Master-Key":API_KEY
+    },
+    body:JSON.stringify({complaints:data})
+  });
+  load(); // reload UI
+}
+
+function route(lat,lng){
+  window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`);
+}
+
+load();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>My Complaints</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;font-family:Arial;background:#0f2027;color:#fff}
+header{background:#081821;padding:14px;text-align:center;font-weight:bold}
+.wrap{max-width:800px;margin:20px auto}
+.card{background:#122733;padding:16px;border-radius:12px;border:2px solid #00ffcc;margin-bottom:14px}
+.status{padding:4px 10px;border-radius:8px;font-size:13px}
+.pending{background:#777}
+.working{background:#ffa500}
+.done{background:#00ffcc;color:#000}
+button{padding:10px;border-radius:8px;border:0;background:#00ffcc;font-weight:bold;margin:10px auto;display:inline-block}
+</style>
+</head>
+
+<body>
+
+<header>My Submitted Complaints</header>
+<div class="wrap" id="list"></div>
+
+<div style="text-align:center">
+  <button onclick="location.href='public.html'">New Complaint</button>
+</div>
+
+<script>
+const BIN_ID="69149419ae596e708f54b77e";
+const API_KEY="$2a$10$M82XOQ0SzJJkyIbSqmB.N.P3E4SU23ePZ5D2QBby.ZbLAlwgBK3c6";
+
+async function load(){
+  const r=await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`,{
+    headers:{"X-Master-Key":API_KEY}
+  });
+  const j=await r.json();
+  const data=j.record?.complaints||[];
+  list.innerHTML="";
+
+  if(!data.length){
+    list.innerHTML="<p>No complaints yet.</p>";
+    return;
+  }
+
+  data.forEach(c=>{
+    let cls="pending";
+    let txt="Not Yet Taken";
+
+    if(c.status==="Under Working"){
+      cls="working";
+      txt="Under Working (Worker is taking action)";
+    }
+    if(c.status==="Completed"){
+      cls="done";
+      txt="Problem Solved";
+    }
+
+    const d=document.createElement("div");
+    d.className="card";
+    d.innerHTML=`
+      <b>${c.issue}</b><br>
+      ${c.desc}<br><br>
+      <b>Action:</b> <span class="status ${cls}">${txt}</span>
+    `;
+    list.appendChild(d);
+  });
+}
+
+load();
+</script>
+
+</body>
+</html>
