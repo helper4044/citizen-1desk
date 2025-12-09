@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CitizenDesk – Public</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:linear-gradient(135deg,#0f2027,#203a43);
+  color:#fff;
+}
+header{
+  background:#081821;
+  padding:14px;
+  text-align:center;
+  font-weight:bold;
+}
+
+/* ✅ MAP */
+#map{
+  height:300px;
+  margin:20px;
+  border-radius:12px;
+  border:2px solid #00ffcc;
+  z-index:1;
+}
+
+/* ✅ FORM */
+.card{
+  max-width:600px;
+  margin:20px auto 60px auto;
+  background:#0c1f2a;
+  padding:16px;
+  border-radius:12px;
+  border:2px solid #00ffcc;
+  position:relative;
+  z-index:1;
+}
+
+input,textarea,select{
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  border-radius:8px;
+  border:none;
+  background:#081821;
+  color:#fff;
+}
+
+button{
+  padding:12px;
+  border-radius:8px;
+  border:0;
+  margin-top:12px;
+  font-weight:bold;
+}
+
+.submit{background:#00ffcc;color:#000;}
+.logout{background:transparent;color:#00ffcc;border:2px solid #00ffcc;}
+
+.note{
+  font-size:13px;
+  color:#ccc;
+  margin-bottom:8px;
+}
+
+/* ✅ ✅ ✅ ABSOLUTE STRONG FULLSCREEN OVERLAY */
+#feedbackBox{
+  display:none;
+  position:fixed;
+  inset:0;                    /* ✅ top:0, right:0, bottom:0, left:0 */
+  width:100vw;
+  height:100vh;
+  background:rgba(0,0,0,0.92);
+  backdrop-filter:blur(4px);
+  z-index:2147483647;         /* ✅ MAX SAFE Z-INDEX */
+  pointer-events:auto;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+/* ✅ INNER MODAL */
+.fb-inner{
+  background:#122733;
+  padding:22px;
+  border-radius:14px;
+  width:300px;
+  text-align:center;
+  border:2px solid #00ffcc;
+  box-shadow:0 0 30px rgba(0,255,204,0.6);
+}
+</style>
+</head>
+
+<body>
+
+<header>Public Complaint – CitizenDesk</header>
+
+<div id="map"></div>
+
+<div class="card">
+
+  <div class="note">📍 Click on the map to select the exact problem location.</div>
+
+  <b>Type of Issue</b>
+  <input id="issue" placeholder="Garbage, Pipeline Leak, Road Damage">
+
+  <b>Complaint Priority</b>
+  <select id="severity">
+    <option>Low – Minor Issue</option>
+    <option>Medium – Needs Attention</option>
+    <option>High – Emergency</option>
+  </select>
+
+  <b>Problem Details</b>
+  <textarea id="desc" placeholder="Explain the problem in detail"></textarea>
+
+  <b>Upload Photo</b>
+  <input type="file" id="img">
+
+  <button class="submit" onclick="submit()">Submit</button>
+  <button class="logout" onclick="location.href='index.html'">Logout</button>
+</div>
+
+<!-- ✅ ✅ ✅ FULL SCREEN OVERLAY -->
+<div id="feedbackBox">
+  <div class="fb-inner">
+    <h3>Rate Your Experience</h3>
+
+    <select id="rating">
+      <option>5 - Excellent</option>
+      <option>4 - Good</option>
+      <option>3 - Average</option>
+      <option>2 - Poor</option>
+      <option>1 - Very Bad</option>
+    </select>
+
+    <textarea id="fbtext" placeholder="Optional feedback"></textarea>
+
+    <br><br>
+    <button onclick="sendFeedback()">Submit</button>
+    <button onclick="skip()">Skip</button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+let map = L.map('map').setView([30.3165,78.0322],12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+let marker = null;
+let selectedLatLng = null;
+
+map.on('click', function(e){
+  selectedLatLng = e.latlng;
+
+  if(marker){
+    map.removeLayer(marker);
+  }
+
+  marker = L.marker(e.latlng).addTo(map)
+    .bindPopup("✅ Location Selected").openPopup();
+});
+
+function submit(){
+  const issue = document.getElementById("issue").value.trim();
+  const desc = document.getElementById("desc").value.trim();
+  const file = document.getElementById("img").files[0];
+
+  if(!issue || !desc){
+    alert("❗ Please fill all required fields");
+    return;
+  }
+
+  if(!selectedLatLng){
+    alert("❗ Please select the problem location by clicking on the map.");
+    return;
+  }
+
+  if(file){
+    const reader = new FileReader();
+    reader.onload = e => {
+      localStorage.setItem("complaintImage", e.target.result);
+      localStorage.setItem("complaintLat", selectedLatLng.lat);
+      localStorage.setItem("complaintLng", selectedLatLng.lng);
+    };
+    reader.readAsDataURL(file);
+  }else{
+    localStorage.setItem("complaintLat", selectedLatLng.lat);
+    localStorage.setItem("complaintLng", selectedLatLng.lng);
+  }
+
+  // ✅ FORCE SHOW OVERLAY
+  const fb = document.getElementById("feedbackBox");
+  fb.style.display = "flex";
+  document.body.style.overflow = "hidden";   // ✅ prevent background scroll
+}
+
+function sendFeedback(){
+  alert("✅ Thank you for your feedback! Your complaint has been registered.");
+  closeOverlay();
+}
+
+function skip(){
+  closeOverlay();
+}
+
+function closeOverlay(){
+  document.getElementById("feedbackBox").style.display = "none";
+  document.body.style.overflow = "auto";
+}
+</script>
+
+</body>
+</html>
