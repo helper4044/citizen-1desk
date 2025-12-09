@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CitizenDesk – Public</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+body{margin:0;font-family:Arial;background:linear-gradient(135deg,#0f2027,#203a43);color:#fff}
+header{background:#081821;padding:14px;text-align:center;font-weight:bold}
+#map{height:300px;margin:20px;border-radius:12px;border:2px solid #00ffcc}
+.card{
+  max-width:600px;margin:20px auto;background:#0c1f2a;
+  padding:16px;border-radius:12px;border:2px solid #00ffcc
+}
+input,textarea,select{
+  width:100%;padding:10px;margin-top:8px;border-radius:8px;
+  border:none;background:#081821;color:#fff
+}
+button{padding:12px;border-radius:8px;border:0;margin-top:12px;font-weight:bold}
+.submit{background:#00ffcc;color:#000}
+.logout{background:transparent;color:#00ffcc;border:2px solid #00ffcc}
+
+#feedbackBox{
+  display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,.7);justify-content:center;align-items:center
+}
+.fb-inner{
+  background:#122733;padding:20px;border-radius:12px;width:300px;text-align:center
+}
+</style>
+</head>
+<body>
+
+<header>Public Complaint – CitizenDesk</header>
+
+<div id="map"></div>
+
+<div class="card">
+
+  <!-- ✅ RENAMED -->
+  <b>Type of Issue</b>
+  <input id="issue" placeholder="Garbage, Pipeline Leak, Road Damage">
+
+  <!-- ✅ NEW HEADING + DETAILED OPTIONS -->
+  <b>Complaint Priority</b>
+  <select id="severity">
+    <option>Low – Minor Issue</option>
+    <option>Medium – Needs Attention</option>
+    <option>High – Emergency</option>
+  </select>
+
+  <!-- ✅ RENAMED -->
+  <b>Problem Details</b>
+  <textarea id="desc" placeholder="Explain the problem in detail"></textarea>
+
+  <b>Upload Photo</b>
+  <input type="file" id="img">
+
+  <button class="submit" onclick="submit()">Submit</button>
+  <button class="logout" onclick="location.href='index.html'">Logout</button>
+</div>
+
+<!-- ✅ Feedback Box (unchanged) -->
+<div id="feedbackBox">
+  <div class="fb-inner">
+    <h3>Rate Your Experience</h3>
+    <select id="rating">
+      <option>5 - Excellent</option>
+      <option>4 - Good</option>
+      <option>3 - Average</option>
+      <option>2 - Poor</option>
+      <option>1 - Very Bad</option>
+    </select>
+    <textarea id="fbtext" placeholder="Optional feedback"></textarea>
+    <br><br>
+    <button onclick="sendFeedback()">Submit</button>
+    <button onclick="skip()">Skip</button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+let map=L.map('map').setView([30.3165,78.0322],12); // Dehradun only
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+function submit(){
+  const file=document.getElementById("img").files[0];
+  if(file){
+    const reader=new FileReader();
+    reader.onload=e=>{
+      localStorage.setItem("complaintImage",e.target.result);
+    };
+    reader.readAsDataURL(file);
+  }
+  document.getElementById("feedbackBox").style.display="flex";
+}
+
+function sendFeedback(){
+  alert("Thank you for your feedback!");
+  feedbackBox.style.display="none";
+}
+
+function skip(){
+  feedbackBox.style.display="none";
+}
+</script>
+
+</body>
+</html>
