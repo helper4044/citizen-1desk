@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Public Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;font-family:Arial;background:#0f2027;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh}
+.box{background:#122733;padding:30px;border-radius:16px;border:2px solid #00ffcc;width:320px;text-align:center}
+input{width:100%;padding:10px;margin-top:10px;border-radius:8px;border:none;background:#081821;color:#fff}
+button{width:100%;margin-top:16px;padding:10px;border-radius:8px;border:none;background:#00ffcc;font-weight:bold}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>Public Login</h2>
+  <input id="u" placeholder="Username">
+  <input id="p" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <p style="font-size:12px;color:#bbb">Demo: public / public@123</p>
+</div>
+
+<script>
+function login(){
+  if(u.value==="public" && p.value==="public@123"){
+    location.href="public.html";
+  }else alert("Invalid Public Login");
+}
+</script>
+
+</body>
+</html>
